@@ -1,0 +1,59 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci-cd:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up SSH
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # Step 3: Pull latest changes from the repository
+      - name: Pull latest changes
+        run: |
+          git fetch origin main
+          git pull origin main
+
+      # Step 4: Build Docker image locally on the server
+      - name: Build and deploy Docker image via SSH
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          set -e
+          
+          # Pull the latest code
+          cd /home/ec2-user/sample-node-project
+          git fetch origin main
+          git reset --hard origin/main
+          
+          # Build the Docker image locally
+          docker build -t sample-node-project:latest .
+          
+          # Stop and remove the old container if it exists
+          docker stop sample-node-app || true
+          docker rm sample-node-app || true
+          
+          # Run the new container
+          docker run -d --name sample-node-app -p 80:3000 sample-node-project:latest
+          EOF
+
+      # Step 5: Handle build and deployment failures
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Build or deployment failed. Check the logs on the server."
+
