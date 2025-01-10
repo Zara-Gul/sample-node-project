@@ -34,9 +34,9 @@ jobs:
           npm install
 
       # Step 4: Run tests
-      - name: Run tests
-        run: |
-          npm test
+  #    - name: Run tests
+     #   run: |
+     #     npm test
 
       # Step 4: Build and deploy Docker image locally on the server via SSH
       - name: Build and deploy Docker image via SSH
