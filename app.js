@@ -15,6 +15,7 @@ app.use(express.static(__dirname + '/app/public')); // KULLANICILAR TARAFINDAN E
 
 require('./app/routes')(app); // ROUTE DOSYASI ÇAĞIRILDI
 
+module.exports = app; // Export the app object
 /*
 
 HTTP SERVER OLUŞTURULDU
