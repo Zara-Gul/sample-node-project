@@ -1,2 +1,3 @@
-node_modulesssh-private-key
+node_modules
+ssh-private-key
 ssh-private-key.pub
