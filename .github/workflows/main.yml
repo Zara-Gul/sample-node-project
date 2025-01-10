@@ -30,7 +30,7 @@ jobs:
           set -e
 
           # Pull the latest code
-          cd /path/to/sample-node-project
+          cd /home/ec2-user/sample-node-project
           git fetch origin main
           git reset --hard origin/main
           
