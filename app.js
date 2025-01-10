@@ -26,3 +26,26 @@ HTTP SERVER OLUŞTURULDU
 http.createServer(app).listen(app.get('port'), function(){
 	console.log('Sistem ' + app.get('port') + ' Portu Üzerinde Çalışıyor.');
 });
+
+//new changes
+
+let server;
+
+if (process.env.NODE_ENV !== 'test') {
+  server = http.createServer(app).listen(app.get('port'), function() {
+    console.log('Sistem ' + app.get('port') + ' Portu Üzerinde Çalışıyor.');
+  });
+}
+
+// Export the app for testing purposes
+if (process.env.NODE_ENV === 'test') {
+  module.exports = app;
+}
+
+// Close the server after tests if running in 'test' environment
+if (server && process.env.NODE_ENV === 'test') {
+  afterAll(() => {
+    server.close(); // Close the server after tests complete
+  });
+}
+
