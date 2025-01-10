@@ -23,27 +23,33 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Step 3: Build Docker image locally on the server via SSH
+      # Step 3: Build and deploy Docker image locally on the server via SSH
       - name: Build and deploy Docker image via SSH
         run: |
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           set -e
 
           # Pull the latest code
-          cd /home/ec2-user/sample-node-project 
+          cd /path/to/sample-node-project
           git fetch origin main
           git reset --hard origin/main
           
+          # Install dependencies
+          npm install
+
           # Build the Docker image with a version tag (using commit hash as version)
           IMAGE_TAG=$(git rev-parse --short HEAD)
           docker build -t sample-node-project:$IMAGE_TAG .
-          
+
           # Stop and remove the old container if it exists
           docker stop sample-node-app || true
           docker rm sample-node-app || true
           
           # Run the new container with the new image tag
           docker run -d --name sample-node-app -p 80:3000 sample-node-project:$IMAGE_TAG
+
+          # Start the app inside the container if not done by Dockerfile
+          docker exec -d sample-node-app npm start
           EOF
 
       # Step 4: Handle build and deployment failures
