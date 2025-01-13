@@ -44,6 +44,11 @@ jobs:
           ssh -o StrictHostKeyChecking=no ec2-user@ec2-51-20-35-194.eu-north-1.compute.amazonaws.com  << 'EOF'
           set -e
 
+          # Ensure Docker is installed and running
+          sudo systemctl start docker
+          sudo systemctl enable docker
+          sudo usermod -aG docker ec2-user
+          
           # Pull the latest code
           cd /home/ec2-user/sample-node-project
           git fetch origin main
@@ -54,20 +59,20 @@ jobs:
 
           # Build the Docker image with a version tag (using commit hash as version)
           IMAGE_TAG=$(git rev-parse --short HEAD)
-          docker build -t sample-node-project:$IMAGE_TAG .
+          sudo docker build -t sample-node-project:$IMAGE_TAG .
 
           # Stop and remove the old container if it exists
-          docker stop sample-node-app || true
-          docker rm sample-node-app || true
+          sudo docker stop sample-node-app || true
+          sudo docker rm sample-node-app || true
           
           # Run the new container with the new image tag
-          docker run -d --name sample-node-app -p 80:3000 sample-node-project:$IMAGE_TAG
+          sudo docker run -d --name sample-node-app -p 80:3000 sample-node-project:$IMAGE_TAG
 
           # Start the app inside the container if not done by Dockerfile
           docker exec -d sample-node-app npm start
           EOF
 
-      # Step 4: Handle build and deployment failures
+      # Step 5: Handle build and deployment failures
       - name: Notify on failure
         if: failure()
         run: |
