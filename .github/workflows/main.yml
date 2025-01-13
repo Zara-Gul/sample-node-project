@@ -41,7 +41,7 @@ jobs:
       # Step 4: Build and deploy Docker image locally on the server via SSH
       - name: Build and deploy Docker image via SSH
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@ec2-51-20-124-5.eu-north-1.compute.amazonaws.com  << 'EOF'
+          ssh -o StrictHostKeyChecking=no ec2-user@ec2-172-31-20-7.eu-north-1.compute.amazonaws.com  << 'EOF'
           set -e
 
           # Pull the latest code
