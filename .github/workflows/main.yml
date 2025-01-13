@@ -67,8 +67,3 @@ jobs:
       - name: Notify on failure
         if: failure()
         run: echo "Build or deployment failed. Check the logs on the server."
-
-
-
-      #ssh -o StrictHostKeyChecking=no ec2-user@ec2-51-20-35-194.eu-north-1.compute.amazonaws.com  << 'EOF'
-
