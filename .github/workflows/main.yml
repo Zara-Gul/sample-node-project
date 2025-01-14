@@ -42,7 +42,7 @@ jobs:
       - name: Build and deploy Docker image via SSH
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@ec2-13.49.207.123.eu-north-1.compute.amazonaws.com  << 'EOF'
-          set -e
+            set -e
 
           # Ensure Docker is installed and running
           sudo systemctl start docker
@@ -64,12 +64,15 @@ jobs:
           # Stop and remove the old container if it exists
           sudo docker stop sample-node-app || true
           sudo docker rm sample-node-app || true
-          
+                
           # Run the new container with the new image tag
           sudo docker run -d --name sample-node-app -p 80:3000 sample-node-project:$IMAGE_TAG
 
+          # Wait for the container to be fully up
+          sleep 5
+
           # Start the app inside the container if not done by Dockerfile
-          docker exec -d sample-node-app npm start
+          sudo docker exec -d sample-node-app npm start
           EOF
 
       # Step 5: Handle build and deployment failures
