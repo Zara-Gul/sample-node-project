@@ -73,17 +73,14 @@ jobs:
             
             sudo systemctl start docker
             sudo systemctl enable docker
+            docker compose down || true
+            docker rmi sample-node-project || true
                    
             # Build new backend image
             IMAGE_TAG=$(git rev-parse --short HEAD)
             sudo docker build -t sample-node-project:$IMAGE_TAG .
-            sudo docker run -d --name sample-node-project -p 3000:3000 sample-node-project
+            docker run -d --name sample-node-container -p 80:3000 sample-node-project:$IMAGE_TAG
 
-            docker compose down || true
-            # Remove existing backend image
-            docker rmi sample-node-project || true
-            docker rm sample-node-project
-            
             # Bring up the Docker services
             docker compose up -d
             echo "Docker Deployment completed successfully!"
