@@ -73,18 +73,16 @@ jobs:
             
             sudo systemctl start docker
             sudo systemctl enable docker
-            
-            # Remove existing backend container $ images
-            sudo docker container prune -f
-            sudo docker image prune -f
-
-            docker compose down || true
-            # Remove existing backend image
-            docker rmi sample-node-app || true
-            
+                   
             # Build new backend image
             IMAGE_TAG=$(git rev-parse --short HEAD)
             sudo docker build -t sample-node-project:$IMAGE_TAG .
+            sudo docker run -d --name sample-node-project -p 3000:3000 sample-node-project
+
+            docker compose down || true
+            # Remove existing backend image
+            docker rmi sample-node-project || true
+            docker rm sample-node-project
             
             # Bring up the Docker services
             docker compose up -d
