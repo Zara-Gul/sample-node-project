@@ -74,7 +74,10 @@ jobs:
             sudo systemctl start docker
             sudo systemctl enable docker
             
-            # Remove existing backend container
+            # Remove existing backend container $ images
+            sudo docker container prune -f
+            sudo docker image prune -f
+
             docker compose down || true
             # Remove existing backend image
             docker rmi sample-node-app || true
