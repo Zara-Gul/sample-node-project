@@ -16,6 +16,8 @@ jobs:
       # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # Use PAT for authentication
 
       # Step 2: Set up SSH
       - name: Set up SSH
@@ -23,7 +25,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    # Step 3: Set up Node.js and install dependencies
+      # Step 3: Set up Node.js and install dependencies
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -33,49 +35,46 @@ jobs:
         run: |
           npm install
 
-      # Step 4: Run tests
-  #    - name: Run tests
-     #   run: |
-     #     npm test
+      # Step 4: Run tests (optional, uncomment if tests should be run)
+      # - name: Run tests
+      #   run: |
+      #     npm test
 
-      # Step 4: Build and deploy Docker image locally on the server via SSH
+      # Step 5: Build and deploy Docker image locally on the server via SSH
       - name: Build and deploy Docker image via SSH
         run: |
-          ssh -tt -o StrictHostKeyChecking=no ec2-user@ec2-13-49-207-123.eu-north-1.compute.amazonaws.com  << 'EOF'
-          set -e
+          ssh -tt -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            set -e
 
-          # Ensure Docker is installed and running
-          sudo systemctl start docker
-          sudo systemctl enable docker
-          sudo usermod -aG docker ec2-user
-          
-          # Pull the latest code
-          cd /home/ec2-user/sample-node-project
-          git fetch origin main
-          git reset --hard origin/main
-          
-          # Install dependencies
-          npm install
-
-          # Build the Docker image with a version tag (using commit hash as version)
-          IMAGE_TAG=$(git rev-parse --short HEAD)
-          sudo docker build -t sample-node-project:$IMAGE_TAG .
-
-          # Stop and remove the old container if it exists
-          sudo docker stop sample-node-app || true
-          sudo docker rm sample-node-app || true
-                
-          # Run the new container with the new image tag
-          sudo docker run -d --name sample-node-app -p 80:3000 sample-node-project:$IMAGE_TAG
-
-          # Wait for the container to be fully up
-          sleep 5
-
-          # Start the app inside the container if not done by Dockerfile
-          sudo docker exec -d sample-node-app npm start
+            # Ensure Docker is installed and running
+            sudo systemctl start docker
+            sudo systemctl enable docker
+            sudo usermod -aG docker ${{ secrets.SSH_USER }}
+            
+            # Pull the latest code
+            cd /home/${{ secrets.SSH_USER }}/sample-node-project
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Install dependencies
+            npm install
+  
+            # Build the Docker image with a version tag (using commit hash as version)
+            IMAGE_TAG=$(git rev-parse --short HEAD)
+            sudo docker build -t sample-node-project:$IMAGE_TAG .
+  
+            # Stop and remove the old container if it exists
+            sudo docker stop sample-node-app || true
+            sudo docker rm sample-node-app || true
+                  
+            # Run the new container with the new image tag
+            sudo docker run -d --name sample-node-app -p 80:3000 sample-node-project:$IMAGE_TAG
+  
+            # Start the app inside the container if not done by Dockerfile
+            sudo docker exec -d sample-node-app npm start
           EOF
 
-      # Step 5: Handle build and deployment failures
+      # Step 6: Handle build and deployment failures
       - name: Notify on failure
         if: failure()
         run: |
