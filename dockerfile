@@ -1,8 +1,8 @@
-FROM node:14.17.5
+FROM node:18
 
 WORKDIR /app
-COPY package.json ./
+COPY package.json package-lock.json ./
 RUN npm install
 COPY . .
-CMD ["node","app.js"]
-EXPOSE 3005
+EXPOSE 3000
+CMD ["node", "app.js"]
