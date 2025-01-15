@@ -47,8 +47,8 @@ jobs:
             docker system prune -af
 
             # Build the Docker image
-            IMAGE_TAG=$(git rev-parse --short HEAD)
-            docker build -t sample-node-project:$IMAGE_TAG .
+            # IMAGE_TAG=$(git rev-parse --short HEAD)
+            # docker build -t sample-node-project:$IMAGE_TAG .
 
             # Build and start containers using Docker Compose (uses the built image)
             docker compose up --build -d
