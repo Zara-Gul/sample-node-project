@@ -37,13 +37,7 @@ jobs:
 
             sudo systemctl start docker
             sudo systemctl enable docker
-
-            if ! command -v docker-compose &> /dev/null; then
-              echo "Docker Compose not found. Installing..."
-              sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
-              sudo chmod +x /usr/local/bin/docker-compose
-            fi
-
+            
             # Pull latest changes from the repository
             git pull origin main
             echo "Git pull completed!"
