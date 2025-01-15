@@ -1,14 +1,17 @@
 version: '3.7'
 
 services:
-  environment:
-    container_name: environment
+  app:
+    container_name: node_app
     build:
       context: .
       dockerfile: dockerfile
     ports:
-      - 3000:3000
-    stdin_open: true
+      - "3000:3000"
     environment:
       - CHOKIDAR_USEPOLLING=true
-    command: node app.js
+      - NODE_ENV=production
+    volumes:
+      - .:/app  # Enable live reload during development if needed
+      - /app/node_modules  # Prevent overwriting node_modules
+    command: ["node", "app.js"]
