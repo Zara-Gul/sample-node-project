@@ -9,7 +9,7 @@ var express = require('express');
 var app = express();
 
 //app.set('port', process.env.PORT || 3000); // GİRİŞ PORTU AYARLANDI
-app.set('port', process.env.PORT || (process.env.NODE_ENV === 'test' ? 3001 : 3000)); // Different port for testing
+app.set('port', process.env.PORT || (process.env.NODE_ENV === 'test' ? 3001 : 3001)); // Different port for testing
 
 app.set('views', __dirname + '/app/server/views'); // VIEW KLASÖRÜ TANITILDI
 app.set('view engine', 'ejs'); // VIEW ENGINE AYARLANDI
