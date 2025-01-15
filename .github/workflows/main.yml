@@ -17,76 +17,52 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up SSH
+      # Step 2: Set up SSH for remote deployment
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: SSH and Deploy
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        run: |
-          ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << 'EOF'
-            set -e
-            cd /home/ec2-user/sample-node-project
-            git pull origin main
-            echo "Git pull completed!"
-          EOF
-          echo "SSH session and deployment completed successfully!"
-
-      # Step 3: Set up Node.js and install dependencies
-      #- name: Set up Node.js
-       # uses: actions/setup-node@v3
-       # with:
-       #   node-version: '16'
-
-    # - name: Install dependencies
-      #  run: |
-      #    npm install
-
-      # Step 4: Run tests (optional, uncomment if tests should be run)
-      # - name: Run tests
-      #   run: |
-      #     npm test
-
-      # Step 5: Build and deploy Docker image locally on the server via SSH
-  docker:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Docker Deployment
+      # Step 3: Pull latest code and build the Docker image, then deploy using Docker Compose
+      - name: Build Docker Image and Deploy via Docker Compose
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
-          echo "Starting Docker Deployment..."
+          echo "Starting Deployment..."
           ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << 'EOF'
             set -e
+
             cd /home/ec2-user/sample-node-project
-            
+
             sudo systemctl start docker
             sudo systemctl enable docker
-            docker compose down || true
-            docker rmi sample-node-project || true
-                   
-            # Build new backend image
-            IMAGE_TAG=$(git rev-parse --short HEAD)
-            sudo docker build -t sample-node-project:$IMAGE_TAG .
-            docker run -d --name sample-node-container -p 80:3000 sample-node-project:$IMAGE_TAG
 
-            # Bring up the Docker services
-            docker compose up -d
-            echo "Docker Deployment completed successfully!"
+            if ! command -v docker-compose &> /dev/null; then
+              echo "Docker Compose not found. Installing..."
+              sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+            fi
+
+            # Pull latest changes from the repository
+            git pull origin main
+            echo "Git pull completed!"
+
+            # Stop, remove existing containers, and clean up unused Docker resources
+            docker compose down
+            docker system prune -af
+
+            # Build the Docker image
+            IMAGE_TAG=$(git rev-parse --short HEAD)
+            docker build -t sample-node-project:$IMAGE_TAG .
+
+            # Build and start containers using Docker Compose (uses the built image)
+            docker compose up --build -d
+
+            echo "Docker Compose Deployment completed successfully!"
           EOF
 
-      # Step 6: Handle build and deployment failures
+      # Step 4: Handle build and deployment failures
       - name: Notify on failure
         if: failure()
         run: |
