@@ -3,6 +3,7 @@
 GEREKLİ PAKETLER YÜKLENİYOR...
 
 */
+/*
 var http = require('http');
 var express = require('express');
 
@@ -18,11 +19,11 @@ app.use(express.static(__dirname + '/app/public')); // KULLANICILAR TARAFINDAN E
 require('./app/routes')(app); // ROUTE DOSYASI ÇAĞIRILDI
 
 module.exports = app; // Export the app object
-/*
 
-HTTP SERVER OLUŞTURULDU
 
-*/
+// HTTP SERVER OLUŞTURULDU
+
+
 http.createServer(app).listen(app.get('port'), function(){
 	console.log('Sistem ' + app.get('port') + ' Portu Üzerinde Çalışıyor.');
 });
@@ -48,4 +49,33 @@ if (server && process.env.NODE_ENV === 'test') {
     server.close(); // Close the server after tests complete
   });
 }
+*/
 
+var http = require('http');
+var express = require('express');
+
+var app = express();
+
+app.set('port', process.env.PORT || (process.env.NODE_ENV === 'test' ? 3002 : 3006)); // Different port for testing
+
+app.set('views', __dirname + '/app/server/views'); 
+app.set('view engine', 'ejs'); 
+app.use(express.static(__dirname + '/app/public')); 
+
+require('./app/routes')(app);
+
+let server;
+
+if (process.env.NODE_ENV !== 'test') {
+  server = http.createServer(app).listen(app.get('port'), function() {
+    console.log('Sistem ' + app.get('port') + ' Portu Üzerinde Çalışıyor.');
+  });
+}
+
+module.exports = app;
+
+if (server && process.env.NODE_ENV === 'test') {
+  afterAll(() => {
+    server.close(); // Close the server after tests complete
+  });
+}
