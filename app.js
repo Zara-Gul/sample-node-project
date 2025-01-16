@@ -50,7 +50,8 @@ if (server && process.env.NODE_ENV === 'test') {
   });
 }
 */
-
+//second
+/*
 var http = require('http');
 var express = require('express');
 
@@ -79,3 +80,39 @@ if (server && process.env.NODE_ENV === 'test') {
     server.close(); // Close the server after tests complete
   });
 }
+*/
+
+var http = require('http');
+var express = require('express');
+
+var app = express();
+
+// Set the port based on environment variables
+app.set('port', process.env.PORT || (process.env.NODE_ENV === 'test' ? 3002 : 3006)); // Different port for testing
+
+app.set('views', __dirname + '/app/server/views');
+app.set('view engine', 'ejs');
+app.use(express.static(__dirname + '/app/public'));
+
+// Include the route file
+require('./app/routes')(app);
+
+let server;
+
+// Only run the server if not in 'test' environment
+if (process.env.NODE_ENV !== 'test') {
+  server = http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {  // Binding to 0.0.0.0 for external access
+    console.log('Sistem ' + app.get('port') + ' Portu Üzerinde Çalışıyor.');
+  });
+}
+
+// Export the app for testing purposes
+module.exports = app;
+
+// Close the server after tests complete in 'test' environment
+if (server && process.env.NODE_ENV === 'test') {
+  afterAll(() => {
+    server.close();
+  });
+}
+
