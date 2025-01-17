@@ -37,8 +37,6 @@ jobs:
 
             sudo systemctl start docker
             sudo systemctl enable docker
-            sudo systemctl start nginx
-            docker start nginx
             
             git pull origin main
             echo "Git pull completed!"
