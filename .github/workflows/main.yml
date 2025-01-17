@@ -44,10 +44,6 @@ jobs:
             docker compose down
             docker system prune -af
 
-            # Ensure certbot is installed for SSL certificates
-            sudo apt-get update
-            sudo apt-get install -y certbot python3-certbot-nginx
-
             # Build and start containers using Docker Compose (uses the built image)
             docker compose up --build -d
 
