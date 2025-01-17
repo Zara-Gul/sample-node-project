@@ -38,17 +38,15 @@ jobs:
             sudo systemctl start docker
             sudo systemctl enable docker
             
-            # Pull latest changes from the repository
             git pull origin main
             echo "Git pull completed!"
 
-            # Stop, remove existing containers, and clean up unused Docker resources
             docker compose down
             docker system prune -af
 
-            # Build the Docker image
-            # IMAGE_TAG=$(git rev-parse --short HEAD)
-            # docker build -t sample-node-project:$IMAGE_TAG .
+            # Ensure certbot is installed for SSL certificates
+            sudo apt-get update
+            sudo apt-get install -y certbot python3-certbot-nginx
 
             # Build and start containers using Docker Compose (uses the built image)
             docker compose up --build -d
